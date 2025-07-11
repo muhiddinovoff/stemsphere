@@ -1,24 +1,27 @@
 
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Search, User, Settings, Moon, Sun, MessageCircle, Hash } from 'lucide-react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Home, Search, User, Settings, Hash, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useAuth } from '@/hooks/useAuth';
 
 interface LayoutProps {
   children: React.ReactNode;
-  darkMode?: boolean;
-  toggleDarkMode?: () => void;
 }
 
-const Layout = ({ children, darkMode = false, toggleDarkMode }: LayoutProps) => {
+const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { user } = useAuth();
 
   const navItems = [
-    { icon: Home, label: 'Home', path: '/' },
-    { icon: Search, label: 'Explore', path: '/explore' },
-    { icon: Hash, label: 'Categories', path: '/categories' },
-    { icon: MessageCircle, label: 'Messages', path: '/messages' },
-    { icon: User, label: 'Profile', path: '/profile' },
+    { icon: Home, label: t('home'), path: '/' },
+    { icon: Search, label: t('explore'), path: '/explore' },
+    { icon: Hash, label: t('categories'), path: '/categories' },
+    { icon: MessageCircle, label: t('messages'), path: '/messages' },
+    { icon: User, label: t('profile'), path: '/profile' },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -41,14 +44,7 @@ const Layout = ({ children, darkMode = false, toggleDarkMode }: LayoutProps) => 
             <Button
               variant="ghost"
               size="sm"
-              onClick={toggleDarkMode}
-              className="glass-card border-0"
-            >
-              {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
+              onClick={() => navigate('/settings')}
               className="glass-card border-0"
             >
               <Settings className="h-4 w-4" />
@@ -88,12 +84,12 @@ const Layout = ({ children, darkMode = false, toggleDarkMode }: LayoutProps) => 
           <div className="space-y-4">
             {/* Trending Topics */}
             <div className="glass-card p-4">
-              <h3 className="font-semibold mb-3 text-primary">Trending in STEM</h3>
+              <h3 className="font-semibold mb-3 text-primary">{t('trendingTopics')}</h3>
               <div className="space-y-2">
                 {['#QuantumComputing', '#ClimateScience', '#MachineLearning', '#Biotech'].map((tag) => (
                   <div key={tag} className="p-2 rounded-lg hover:bg-primary/10 cursor-pointer transition-colors">
                     <span className="text-sm font-medium text-primary">{tag}</span>
-                    <p className="text-xs text-muted-foreground">12.5K discussions</p>
+                    <p className="text-xs text-muted-foreground">12.5K {t('discussions')}</p>
                   </div>
                 ))}
               </div>
@@ -101,7 +97,7 @@ const Layout = ({ children, darkMode = false, toggleDarkMode }: LayoutProps) => 
 
             {/* Suggested Users */}
             <div className="glass-card p-4">
-              <h3 className="font-semibold mb-3 text-primary">Suggested Scientists</h3>
+              <h3 className="font-semibold mb-3 text-primary">{t('suggestedScientists')}</h3>
               <div className="space-y-3">
                 {[
                   { name: 'Dr. Sarah Chen', field: 'Quantum Physics', followers: '15.2K' },
@@ -116,7 +112,7 @@ const Layout = ({ children, darkMode = false, toggleDarkMode }: LayoutProps) => 
                         <p className="text-xs text-muted-foreground">{user.field}</p>
                       </div>
                     </div>
-                    <Button size="sm" className="glow-button">Follow</Button>
+                    <Button size="sm" className="glow-button">{t('follow')}</Button>
                   </div>
                 ))}
               </div>

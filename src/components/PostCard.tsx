@@ -1,182 +1,186 @@
 
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Repeat2, Share, MoreHorizontal, Bookmark } from 'lucide-react';
+import { Heart, MessageCircle, Repeat2, Share, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { usePosts, Post } from '@/hooks/usePosts';
+import { useFollow } from '@/hooks/useFollow';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PostCardProps {
-  id: string;
-  author: {
-    name: string;
-    username: string;
-    avatar?: string;
-    field: string;
-    verified?: boolean;
-  };
-  content: string;
-  timestamp: string;
-  category: 'Physics' | 'Chemistry' | 'Biology' | 'Mathematics' | 'Technology' | 'Engineering';
-  likes: number;
-  comments: number;
-  reposts: number;
-  image?: string;
-  hashtags?: string[];
+  post: Post;
 }
 
-const PostCard = ({ 
-  author, 
-  content, 
-  timestamp, 
-  category, 
-  likes, 
-  comments, 
-  reposts, 
-  image, 
-  hashtags 
-}: PostCardProps) => {
-  const [liked, setLiked] = useState(false);
-  const [bookmarked, setBookmarked] = useState(false);
-  const [localLikes, setLocalLikes] = useState(likes);
+const PostCard = ({ post }: PostCardProps) => {
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
+  const { toggleLike, addComment } = usePosts();
+  const { toggleFollow, isFollowing } = useFollow();
+  const { t } = useTranslation();
+  const { user } = useAuth();
+
+  const formatTimeAgo = (dateString: string) => {
+    const now = new Date();
+    const postDate = new Date(dateString);
+    const diffInMinutes = Math.floor((now.getTime() - postDate.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 60) return `${diffInMinutes}m`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h`;
+    return `${Math.floor(diffInMinutes / 1440)}d`;
+  };
 
   const handleLike = () => {
-    setLiked(!liked);
-    setLocalLikes(liked ? localLikes - 1 : localLikes + 1);
+    toggleLike(post.id);
   };
 
-  const getCategoryColor = (cat: string) => {
-    const colors = {
-      Physics: 'bg-blue-500/20 text-blue-600 border-blue-500/30',
-      Chemistry: 'bg-green-500/20 text-green-600 border-green-500/30',
-      Biology: 'bg-emerald-500/20 text-emerald-600 border-emerald-500/30',
-      Mathematics: 'bg-purple-500/20 text-purple-600 border-purple-500/30',
-      Technology: 'bg-orange-500/20 text-orange-600 border-orange-500/30',
-      Engineering: 'bg-red-500/20 text-red-600 border-red-500/30',
-    };
-    return colors[cat as keyof typeof colors] || colors.Technology;
+  const handleComment = async () => {
+    if (!commentText.trim()) return;
+    
+    setSubmittingComment(true);
+    await addComment(post.id, commentText);
+    setCommentText('');
+    setSubmittingComment(false);
   };
+
+  const handleFollow = () => {
+    toggleFollow(post.user_id);
+  };
+
+  const isLiked = post.likes?.some(like => like.user_id === user?.id);
+  const isOwnPost = post.user_id === user?.id;
 
   return (
-    <article className="glass-card p-6 mb-4 fade-in hover:shadow-lg transition-all duration-300">
-      <div className="flex items-start space-x-4">
-        {/* Avatar */}
-        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-blue-400 flex items-center justify-center shrink-0">
-          <span className="text-white font-semibold text-lg">
-            {author.name.charAt(0)}
-          </span>
-        </div>
-
-        <div className="flex-1 min-w-0">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center space-x-2">
-              <h3 className="font-semibold text-foreground hover:text-primary cursor-pointer">
-                {author.name}
-              </h3>
-              {author.verified && (
+    <Card className="glass-card border-0 border-b border-border rounded-none hover:bg-accent/5 transition-colors">
+      <CardContent className="p-6">
+        <div className="flex space-x-3">
+          <div className="flex-shrink-0">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-blue-400 flex items-center justify-center">
+              <span className="text-white font-semibold">
+                {post.profiles?.display_name?.charAt(0) || 'U'}
+              </span>
+            </div>
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-2 mb-1">
+              <h3 className="font-semibold text-foreground">{post.profiles?.display_name}</h3>
+              <span className="text-muted-foreground">@{post.profiles?.username}</span>
+              {post.profiles?.verified && (
                 <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
                   <span className="text-white text-xs">✓</span>
                 </div>
               )}
-              <span className="text-muted-foreground text-sm">@{author.username}</span>
-              <span className="text-muted-foreground">•</span>
-              <span className="text-muted-foreground text-sm">{timestamp}</span>
-            </div>
-            <Button variant="ghost" size="sm" className="opacity-60 hover:opacity-100">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </div>
-
-          {/* Category & Field */}
-          <div className="flex items-center space-x-2 mb-3">
-            <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(category)}`}>
-              {category}
-            </span>
-            <span className="text-xs text-muted-foreground">{author.field}</span>
-          </div>
-
-          {/* Content */}
-          <div className="mb-4">
-            <p className="text-foreground leading-relaxed mb-2">{content}</p>
-            
-            {/* Hashtags */}
-            {hashtags && (
-              <div className="flex flex-wrap gap-1 mb-2">
-                {hashtags.map((tag) => (
-                  <span 
-                    key={tag} 
-                    className="text-primary hover:text-primary/80 cursor-pointer text-sm font-medium"
+              <span className="text-muted-foreground">·</span>
+              <span className="text-muted-foreground text-sm">{formatTimeAgo(post.created_at)}</span>
+              {!isOwnPost && (
+                <>
+                  <span className="text-muted-foreground">·</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleFollow}
+                    className="text-primary hover:bg-primary/10 h-auto p-0 font-normal"
                   >
-                    #{tag}
-                  </span>
-                ))}
+                    {isFollowing(post.user_id) ? t('following') : t('follow')}
+                  </Button>
+                </>
+              )}
+            </div>
+            
+            <p className="text-sm text-muted-foreground mb-2">{post.profiles?.field}</p>
+            
+            <div className="mb-3">
+              <p className="text-foreground whitespace-pre-wrap">{post.content}</p>
+              {post.hashtags && post.hashtags.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {post.hashtags.map((tag, index) => (
+                    <span key={index} className="text-primary text-sm">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center justify-between max-w-md">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowComments(!showComments)}
+                className="flex items-center space-x-2 text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10"
+              >
+                <MessageCircle className="h-4 w-4" />
+                <span className="text-sm">{post._count?.comments || 0}</span>
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center space-x-2 text-muted-foreground hover:text-green-500 hover:bg-green-500/10"
+              >
+                <Repeat2 className="h-4 w-4" />
+                <span className="text-sm">0</span>
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLike}
+                className={`flex items-center space-x-2 transition-colors ${
+                  isLiked 
+                    ? 'text-red-500 hover:bg-red-500/10' 
+                    : 'text-muted-foreground hover:text-red-500 hover:bg-red-500/10'
+                }`}
+              >
+                <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+                <span className="text-sm">{post._count?.likes || 0}</span>
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex items-center space-x-2 text-muted-foreground hover:text-primary hover:bg-primary/10"
+              >
+                <Share className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            {showComments && (
+              <div className="mt-4 space-y-3">
+                <div className="flex space-x-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-blue-400 flex items-center justify-center">
+                    <span className="text-white text-sm">
+                      {user?.email?.charAt(0) || 'U'}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <Textarea
+                      placeholder="Write a comment..."
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      className="min-h-[80px] resize-none"
+                    />
+                    <div className="flex justify-end mt-2">
+                      <Button
+                        size="sm"
+                        onClick={handleComment}
+                        disabled={!commentText.trim() || submittingComment}
+                        className="glow-button"
+                      >
+                        {submittingComment ? 'Posting...' : t('comment')}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
-
-            {/* Image */}
-            {image && (
-              <div className="rounded-lg overflow-hidden mt-3 glass-card">
-                <img 
-                  src={image} 
-                  alt="Post content" 
-                  className="w-full h-64 object-cover"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-2 border-t border-border/50">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLike}
-              className={`flex items-center space-x-2 hover:bg-red-500/10 hover:text-red-500 ${
-                liked ? 'text-red-500' : 'text-muted-foreground'
-              }`}
-            >
-              <Heart className={`h-4 w-4 ${liked ? 'fill-current' : ''}`} />
-              <span className="text-xs">{localLikes}</span>
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center space-x-2 hover:bg-blue-500/10 hover:text-blue-500 text-muted-foreground"
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span className="text-xs">{comments}</span>
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center space-x-2 hover:bg-green-500/10 hover:text-green-500 text-muted-foreground"
-            >
-              <Repeat2 className="h-4 w-4" />
-              <span className="text-xs">{reposts}</span>
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setBookmarked(!bookmarked)}
-              className={`hover:bg-yellow-500/10 hover:text-yellow-500 ${
-                bookmarked ? 'text-yellow-500' : 'text-muted-foreground'
-              }`}
-            >
-              <Bookmark className={`h-4 w-4 ${bookmarked ? 'fill-current' : ''}`} />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hover:bg-primary/10 hover:text-primary text-muted-foreground"
-            >
-              <Share className="h-4 w-4" />
-            </Button>
           </div>
         </div>
-      </div>
-    </article>
+      </CardContent>
+    </Card>
   );
 };
 
