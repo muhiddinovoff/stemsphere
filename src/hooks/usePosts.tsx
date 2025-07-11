@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -45,7 +44,7 @@ export const usePosts = () => {
           hashtags,
           image_url,
           user_id,
-          profiles!inner (
+          profiles!posts_user_id_fkey (
             username,
             display_name,
             field,
@@ -67,7 +66,7 @@ export const usePosts = () => {
         }
       })) || [];
 
-      setPosts(formattedPosts);
+      setPosts(formattedPosts as Post[]);
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast({

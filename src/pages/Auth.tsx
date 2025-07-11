@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import EmailVerification from '@/components/EmailVerification';
 import SimpleCaptcha from '@/components/SimpleCaptcha';
 
 const Auth = () => {
@@ -19,8 +18,6 @@ const Auth = () => {
   const [field, setField] = useState('');
   const [loading, setLoading] = useState(false);
   const [captchaValid, setCaptchaValid] = useState(false);
-  const [showVerification, setShowVerification] = useState(false);
-  const [tempUserId, setTempUserId] = useState('');
   const { signUp, signIn, user } = useAuth();
   const navigate = useNavigate();
 
@@ -43,12 +40,8 @@ const Auth = () => {
     });
     
     if (!result.error) {
-      // Get the user ID from the signup response
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        setTempUserId(data.user.id);
-        setShowVerification(true);
-      }
+      // Redirect directly to home after successful signup
+      navigate('/');
     }
     
     setLoading(false);
@@ -63,28 +56,11 @@ const Auth = () => {
     setLoading(false);
   };
 
-  const handleVerificationComplete = () => {
-    setShowVerification(false);
-    navigate('/');
-  };
-
   const stemFields = [
     'Physics', 'Mathematics', 'Chemistry', 'Biology', 'Computer Science',
     'Engineering', 'Medicine', 'Neuroscience', 'Environmental Science',
     'Data Science', 'Biotechnology', 'Astronomy', 'Geology', 'Psychology'
   ];
-
-  if (showVerification) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <EmailVerification
-          email={email}
-          userId={tempUserId}
-          onVerified={handleVerificationComplete}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">

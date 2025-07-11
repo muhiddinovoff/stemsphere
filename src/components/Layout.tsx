@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Search, User, Settings, Hash, MessageCircle } from 'lucide-react';
+import { Home, Search, User, Settings, Hash, MessageCircle, ArrowLeft, Edit3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,13 +25,24 @@ const Layout = ({ children }: LayoutProps) => {
   ];
 
   const isActive = (path: string) => location.pathname === path;
+  const canGoBack = location.pathname !== '/';
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Header - Always visible */}
       <header className="glass-card fixed top-0 left-0 right-0 z-50 border-b">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-3">
+            {canGoBack && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(-1)}
+                className="glass-card border-0 mr-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            )}
             <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-primary to-blue-400 flex items-center justify-center">
               <span className="text-white font-bold text-sm">S</span>
             </div>
@@ -78,48 +89,25 @@ const Layout = ({ children }: LayoutProps) => {
         <main className="flex-1 md:ml-64 px-4">
           {children}
         </main>
-
-        {/* Right Sidebar - Trending & Suggestions */}
-        <aside className="hidden lg:block w-80 fixed right-0 top-20 h-full p-4">
-          <div className="space-y-4">
-            {/* Trending Topics */}
-            <div className="glass-card p-4">
-              <h3 className="font-semibold mb-3 text-primary">{t('trendingTopics')}</h3>
-              <div className="space-y-2">
-                {['#QuantumComputing', '#ClimateScience', '#MachineLearning', '#Biotech'].map((tag) => (
-                  <div key={tag} className="p-2 rounded-lg hover:bg-primary/10 cursor-pointer transition-colors">
-                    <span className="text-sm font-medium text-primary">{tag}</span>
-                    <p className="text-xs text-muted-foreground">12.5K {t('discussions')}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Suggested Users */}
-            <div className="glass-card p-4">
-              <h3 className="font-semibold mb-3 text-primary">{t('suggestedScientists')}</h3>
-              <div className="space-y-3">
-                {[
-                  { name: 'Dr. Sarah Chen', field: 'Quantum Physics', followers: '15.2K' },
-                  { name: 'Prof. Alex Kumar', field: 'AI Research', followers: '8.7K' },
-                  { name: 'Dr. Maya Rodriguez', field: 'Biotechnology', followers: '22.1K' }
-                ].map((user) => (
-                  <div key={user.name} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-blue-400"></div>
-                      <div>
-                        <p className="text-sm font-medium">{user.name}</p>
-                        <p className="text-xs text-muted-foreground">{user.field}</p>
-                      </div>
-                    </div>
-                    <Button size="sm" className="glow-button">{t('follow')}</Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </aside>
       </div>
+
+      {/* Footer with Edit Profile */}
+      <footer className="glass-card border-t mt-8">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            © 2024 STEMSphere. All rights reserved.
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/profile')}
+            className="flex items-center space-x-2"
+          >
+            <Edit3 className="h-4 w-4" />
+            <span>Edit Profile</span>
+          </Button>
+        </div>
+      </footer>
 
       {/* Mobile Bottom Navigation */}
       <nav className="glass-card fixed bottom-0 left-0 right-0 md:hidden border-t">
