@@ -55,7 +55,6 @@ export const usePosts = () => {
           likes (user_id),
           comments (id)
         `)
-        .eq('profiles.id', supabase.rpc('posts.user_id'))
         .order('created_at', { ascending: false });
 
       if (error) throw error;

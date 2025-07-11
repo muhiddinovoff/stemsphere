@@ -36,16 +36,19 @@ const Auth = () => {
     
     setLoading(true);
     
-    const { error } = await signUp(email, password, {
+    const result = await signUp(email, password, {
       display_name: displayName,
       username,
       field
     });
     
-    if (!error) {
-      // Instead of automatic redirect, show verification
-      setShowVerification(true);
-      setTempUserId(email); // Using email as temporary identifier
+    if (!result.error) {
+      // Get the user ID from the signup response
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        setTempUserId(data.user.id);
+        setShowVerification(true);
+      }
     }
     
     setLoading(false);
