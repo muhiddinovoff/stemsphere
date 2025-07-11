@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import EmailVerification from '@/components/EmailVerification';
+import SimpleCaptcha from '@/components/SimpleCaptcha';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -16,6 +18,9 @@ const Auth = () => {
   const [username, setUsername] = useState('');
   const [field, setField] = useState('');
   const [loading, setLoading] = useState(false);
+  const [captchaValid, setCaptchaValid] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
+  const [tempUserId, setTempUserId] = useState('');
   const { signUp, signIn, user } = useAuth();
   const navigate = useNavigate();
 
@@ -27,6 +32,8 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!captchaValid) return;
+    
     setLoading(true);
     
     const { error } = await signUp(email, password, {
@@ -36,11 +43,9 @@ const Auth = () => {
     });
     
     if (!error) {
-      setEmail('');
-      setPassword('');
-      setDisplayName('');
-      setUsername('');
-      setField('');
+      // Instead of automatic redirect, show verification
+      setShowVerification(true);
+      setTempUserId(email); // Using email as temporary identifier
     }
     
     setLoading(false);
@@ -55,11 +60,28 @@ const Auth = () => {
     setLoading(false);
   };
 
+  const handleVerificationComplete = () => {
+    setShowVerification(false);
+    navigate('/');
+  };
+
   const stemFields = [
     'Physics', 'Mathematics', 'Chemistry', 'Biology', 'Computer Science',
     'Engineering', 'Medicine', 'Neuroscience', 'Environmental Science',
     'Data Science', 'Biotechnology', 'Astronomy', 'Geology', 'Psychology'
   ];
+
+  if (showVerification) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <EmailVerification
+          email={email}
+          userId={tempUserId}
+          onVerified={handleVerificationComplete}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -173,7 +195,14 @@ const Auth = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button type="submit" className="w-full glow-button" disabled={loading}>
+                
+                <SimpleCaptcha onVerify={setCaptchaValid} />
+                
+                <Button 
+                  type="submit" 
+                  className="w-full glow-button" 
+                  disabled={loading || !captchaValid}
+                >
                   {loading ? 'Creating account...' : 'Create Account'}
                 </Button>
               </form>

@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Explore from "./pages/Explore";
 import Auth from "./pages/Auth";
 import Settings from "./components/Settings";
+import ProfilePage from "./components/ProfilePage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -47,7 +48,7 @@ const App = () => (
               } />
               <Route path="/profile" element={
                 <ProtectedRoute>
-                  <div>Profile Page (Coming Soon)</div>
+                  <ProfilePage />
                 </ProtectedRoute>
               } />
               <Route path="/settings" element={

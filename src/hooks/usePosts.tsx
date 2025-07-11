@@ -45,7 +45,7 @@ export const usePosts = () => {
           hashtags,
           image_url,
           user_id,
-          profiles (
+          profiles!posts_user_id_fkey (
             username,
             display_name,
             field,
