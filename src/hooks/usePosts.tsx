@@ -45,15 +45,15 @@ export const usePosts = () => {
           hashtags,
           image_url,
           user_id,
-          profiles!posts_user_id_fkey (
+          profiles!user_id (
             username,
             display_name,
             field,
             verified,
             avatar_url
           ),
-          likes!likes_post_id_fkey (user_id),
-          comments!comments_post_id_fkey (id)
+          likes (user_id),
+          comments (id)
         `)
         .order('created_at', { ascending: false });
 
