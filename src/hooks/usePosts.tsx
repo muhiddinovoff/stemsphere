@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -34,6 +35,7 @@ export const usePosts = () => {
 
   const fetchPosts = async () => {
     try {
+      console.log('Fetching posts...');
       const { data, error } = await supabase
         .from('posts')
         .select(`
@@ -56,16 +58,25 @@ export const usePosts = () => {
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      console.log('Posts query result:', { data, error });
 
-      const formattedPosts = data?.map(post => ({
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      // Filter out posts without valid profiles
+      const validPosts = data?.filter(post => post.profiles && typeof post.profiles === 'object' && post.profiles.username) || [];
+      
+      const formattedPosts = validPosts.map(post => ({
         ...post,
         _count: {
           likes: post.likes?.length || 0,
           comments: post.comments?.length || 0
         }
-      })) || [];
+      }));
 
+      console.log('Formatted posts:', formattedPosts);
       setPosts(formattedPosts as Post[]);
     } catch (error) {
       console.error('Error fetching posts:', error);
