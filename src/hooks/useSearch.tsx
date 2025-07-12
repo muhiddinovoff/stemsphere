@@ -10,6 +10,7 @@ export interface SearchResult {
   field: string;
   verified: boolean;
   avatar_url?: string;
+  bio?: string;
 }
 
 export const useSearch = () => {
@@ -17,7 +18,7 @@ export const useSearch = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const searchAccounts = async (query: string) => {
+  const searchUsers = async (query: string) => {
     if (!query.trim()) {
       setResults([]);
       return;
@@ -26,10 +27,19 @@ export const useSearch = () => {
     setLoading(true);
     try {
       console.log('Searching for:', query);
+      
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, display_name, field, verified, avatar_url')
-        .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
+        .select(`
+          id,
+          username,
+          display_name,
+          field,
+          verified,
+          avatar_url,
+          bio
+        `)
+        .or(`username.ilike.%${query}%,display_name.ilike.%${query}%,field.ilike.%${query}%`)
         .limit(10);
 
       if (error) {
@@ -40,21 +50,26 @@ export const useSearch = () => {
       console.log('Search results:', data);
       setResults(data || []);
     } catch (error) {
-      console.error('Error searching accounts:', error);
+      console.error('Error searching users:', error);
       toast({
         title: "Error",
-        description: "Failed to search accounts",
+        description: "Failed to search users",
         variant: "destructive"
       });
+      setResults([]);
     } finally {
       setLoading(false);
     }
   };
 
+  const clearResults = () => {
+    setResults([]);
+  };
+
   return {
     results,
     loading,
-    searchAccounts,
-    clearResults: () => setResults([])
+    searchUsers,
+    clearResults
   };
 };

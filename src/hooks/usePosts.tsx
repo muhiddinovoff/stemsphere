@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -35,7 +36,9 @@ export const usePosts = () => {
   const fetchPosts = async () => {
     try {
       console.log('Fetching posts...');
-      const { data, error } = await supabase
+      
+      // First get posts
+      const { data: postsData, error: postsError } = await supabase
         .from('posts')
         .select(`
           id,
@@ -44,48 +47,112 @@ export const usePosts = () => {
           category,
           hashtags,
           image_url,
-          user_id,
-          profiles (
-            username,
-            display_name,
-            field,
-            verified,
-            avatar_url
-          ),
-          likes (user_id),
-          comments (id)
+          user_id
         `)
         .order('created_at', { ascending: false });
 
-      console.log('Posts query result:', { data, error });
-
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
+      if (postsError) {
+        console.error('Posts query error:', postsError);
+        throw postsError;
       }
 
-      // Filter out posts without valid profiles and ensure type safety
-      const validPosts = data?.filter(post => 
-        post.profiles && 
-        typeof post.profiles === 'object' && 
-        'username' in post.profiles &&
-        post.profiles.username
-      ) || [];
-      
-      const formattedPosts = validPosts.map(post => ({
-        ...post,
-        profiles: post.profiles as {
-          username: string;
-          display_name: string;
-          field: string;
-          verified: boolean;
-          avatar_url?: string;
-        },
-        _count: {
-          likes: post.likes?.length || 0,
-          comments: post.comments?.length || 0
+      if (!postsData || postsData.length === 0) {
+        console.log('No posts found');
+        setPosts([]);
+        return;
+      }
+
+      // Get all unique user IDs from posts
+      const userIds = [...new Set(postsData.map(post => post.user_id))];
+
+      // Fetch profiles for these users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          username,
+          display_name,
+          field,
+          verified,
+          avatar_url
+        `)
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('Profiles query error:', profilesError);
+        throw profilesError;
+      }
+
+      // Fetch likes for all posts
+      const postIds = postsData.map(post => post.id);
+      const { data: likesData, error: likesError } = await supabase
+        .from('likes')
+        .select('post_id, user_id')
+        .in('post_id', postIds);
+
+      if (likesError) {
+        console.error('Likes query error:', likesError);
+      }
+
+      // Fetch comments count for all posts
+      const { data: commentsData, error: commentsError } = await supabase
+        .from('comments')
+        .select('post_id, id')
+        .in('post_id', postIds);
+
+      if (commentsError) {
+        console.error('Comments query error:', commentsError);
+      }
+
+      // Create profile lookup map
+      const profilesMap = new Map();
+      profilesData?.forEach(profile => {
+        profilesMap.set(profile.id, profile);
+      });
+
+      // Create likes lookup map
+      const likesMap = new Map();
+      likesData?.forEach(like => {
+        if (!likesMap.has(like.post_id)) {
+          likesMap.set(like.post_id, []);
         }
-      }));
+        likesMap.get(like.post_id).push({ user_id: like.user_id });
+      });
+
+      // Create comments count map
+      const commentsMap = new Map();
+      commentsData?.forEach(comment => {
+        if (!commentsMap.has(comment.post_id)) {
+          commentsMap.set(comment.post_id, []);
+        }
+        commentsMap.get(comment.post_id).push({ id: comment.id });
+      });
+
+      // Combine the data
+      const formattedPosts = postsData
+        .filter(post => profilesMap.has(post.user_id))
+        .map(post => {
+          const profile = profilesMap.get(post.user_id);
+          const likes = likesMap.get(post.id) || [];
+          const comments = commentsMap.get(post.id) || [];
+
+          return {
+            ...post,
+            profiles: {
+              username: profile.username,
+              display_name: profile.display_name,
+              field: profile.field || 'General',
+              verified: profile.verified || false,
+              avatar_url: profile.avatar_url
+            },
+            likes,
+            comments,
+            _count: {
+              likes: likes.length,
+              comments: comments.length
+            }
+          };
+        });
 
       console.log('Formatted posts:', formattedPosts);
       setPosts(formattedPosts);
