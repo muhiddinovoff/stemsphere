@@ -27,26 +27,50 @@ export const useComments = (postId: string) => {
     if (!postId) return;
 
     try {
-      const { data, error } = await supabase
+      // First get comments
+      const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
-        .select(`
-          id,
-          content,
-          created_at,
-          user_id,
-          post_id,
-          profiles!comments_user_id_fkey(
-            username,
-            display_name,
-            avatar_url
-          )
-        `)
+        .select('id, content, created_at, user_id, post_id')
         .eq('post_id', postId)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (commentsError) throw commentsError;
 
-      setComments(data || []);
+      if (!commentsData || commentsData.length === 0) {
+        setComments([]);
+        return;
+      }
+
+      // Get unique user IDs
+      const userIds = [...new Set(commentsData.map(comment => comment.user_id))];
+
+      // Fetch profiles for these users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_url')
+        .in('id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Create profile lookup map
+      const profilesMap = new Map();
+      profilesData?.forEach(profile => {
+        profilesMap.set(profile.id, profile);
+      });
+
+      // Combine comments with profiles
+      const formattedComments = commentsData
+        .filter(comment => profilesMap.has(comment.user_id))
+        .map(comment => ({
+          ...comment,
+          profiles: {
+            username: profilesMap.get(comment.user_id).username,
+            display_name: profilesMap.get(comment.user_id).display_name,
+            avatar_url: profilesMap.get(comment.user_id).avatar_url
+          }
+        }));
+
+      setComments(formattedComments);
     } catch (error) {
       console.error('Error fetching comments:', error);
     } finally {
@@ -65,23 +89,30 @@ export const useComments = (postId: string) => {
           post_id: postId,
           user_id: user.id
         })
-        .select(`
-          id,
-          content,
-          created_at,
-          user_id,
-          post_id,
-          profiles!comments_user_id_fkey(
-            username,
-            display_name,
-            avatar_url
-          )
-        `)
+        .select('id, content, created_at, user_id, post_id')
         .single();
 
       if (error) throw error;
 
-      setComments(prev => [...prev, data]);
+      // Get user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('username, display_name, avatar_url')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      const newComment = {
+        ...data,
+        profiles: {
+          username: profile.username,
+          display_name: profile.display_name,
+          avatar_url: profile.avatar_url
+        }
+      };
+
+      setComments(prev => [...prev, newComment]);
       toast({
         title: "Success",
         description: "Comment added successfully!"

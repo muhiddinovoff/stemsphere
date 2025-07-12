@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from '@/hooks/useTranslation';
-import { LanguageSelector } from './LanguageSelector';
+import LanguageSelector from './LanguageSelector';
 import { Button } from '@/components/ui/button';
 import { LogOut, Settings } from 'lucide-react';
 import NotificationDropdown from './NotificationDropdown';

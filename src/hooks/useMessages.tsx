@@ -45,35 +45,67 @@ export const useMessages = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      // Get all messages for the current user
+      const { data: messagesData, error: messagesError } = await supabase
         .from('messages')
-        .select(`
-          id,
-          sender_id,
-          receiver_id,
-          content,
-          read,
-          created_at,
-          sender:profiles!messages_sender_id_fkey(username, display_name, avatar_url),
-          receiver:profiles!messages_receiver_id_fkey(username, display_name, avatar_url)
-        `)
+        .select('id, sender_id, receiver_id, content, read, created_at')
         .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (messagesError) throw messagesError;
+
+      if (!messagesData || messagesData.length === 0) {
+        setConversations([]);
+        return;
+      }
+
+      // Get unique user IDs (excluding current user)
+      const userIds = [...new Set(
+        messagesData
+          .map(msg => msg.sender_id === user.id ? msg.receiver_id : msg.sender_id)
+          .filter(id => id !== user.id)
+      )];
+
+      // Fetch profiles for these users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_url')
+        .in('id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Create profile lookup map
+      const profilesMap = new Map();
+      profilesData?.forEach(profile => {
+        profilesMap.set(profile.id, profile);
+      });
 
       // Group messages by conversation
       const conversationMap = new Map<string, Conversation>();
       
-      data?.forEach(message => {
+      messagesData.forEach(message => {
         const otherUserId = message.sender_id === user.id ? message.receiver_id : message.sender_id;
-        const otherUser = message.sender_id === user.id ? message.receiver : message.sender;
+        const otherUser = profilesMap.get(otherUserId);
+        
+        if (!otherUser) return;
         
         if (!conversationMap.has(otherUserId)) {
           conversationMap.set(otherUserId, {
             other_user_id: otherUserId,
-            other_user: otherUser,
-            last_message: message as Message,
+            other_user: {
+              username: otherUser.username,
+              display_name: otherUser.display_name,
+              avatar_url: otherUser.avatar_url
+            },
+            last_message: {
+              ...message,
+              sender: message.sender_id === user.id ? 
+                { username: 'You', display_name: 'You' } : 
+                { username: otherUser.username, display_name: otherUser.display_name, avatar_url: otherUser.avatar_url },
+              receiver: message.receiver_id === user.id ? 
+                { username: 'You', display_name: 'You' } : 
+                { username: otherUser.username, display_name: otherUser.display_name, avatar_url: otherUser.avatar_url }
+            },
             unread_count: 0
           });
         }
@@ -97,24 +129,42 @@ export const useMessages = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      // Get messages between current user and other user
+      const { data: messagesData, error: messagesError } = await supabase
         .from('messages')
-        .select(`
-          id,
-          sender_id,
-          receiver_id,
-          content,
-          read,
-          created_at,
-          sender:profiles!messages_sender_id_fkey(username, display_name, avatar_url),
-          receiver:profiles!messages_receiver_id_fkey(username, display_name, avatar_url)
-        `)
+        .select('id, sender_id, receiver_id, content, read, created_at')
         .or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${user.id})`)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (messagesError) throw messagesError;
 
-      setMessages(data || []);
+      if (!messagesData) {
+        setMessages([]);
+        return;
+      }
+
+      // Get profiles for both users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_url')
+        .in('id', [user.id, otherUserId]);
+
+      if (profilesError) throw profilesError;
+
+      // Create profile lookup map
+      const profilesMap = new Map();
+      profilesData?.forEach(profile => {
+        profilesMap.set(profile.id, profile);
+      });
+
+      // Format messages with profile data
+      const formattedMessages = messagesData.map(message => ({
+        ...message,
+        sender: profilesMap.get(message.sender_id) || { username: 'Unknown', display_name: 'Unknown' },
+        receiver: profilesMap.get(message.receiver_id) || { username: 'Unknown', display_name: 'Unknown' }
+      }));
+
+      setMessages(formattedMessages);
 
       // Mark messages as read
       await supabase

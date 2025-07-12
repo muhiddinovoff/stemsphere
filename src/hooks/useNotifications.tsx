@@ -33,31 +33,72 @@ export const useNotifications = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      // Get notifications for the current user
+      const { data: notificationsData, error: notificationsError } = await supabase
         .from('notifications')
-        .select(`
-          id,
-          user_id,
-          from_user_id,
-          type,
-          post_id,
-          read,
-          created_at,
-          from_user:profiles!notifications_from_user_id_fkey(
-            username,
-            display_name,
-            avatar_url
-          ),
-          post:posts(content)
-        `)
+        .select('id, user_id, from_user_id, type, post_id, read, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(20);
 
-      if (error) throw error;
+      if (notificationsError) throw notificationsError;
 
-      setNotifications(data || []);
-      setUnreadCount(data?.filter(n => !n.read).length || 0);
+      if (!notificationsData || notificationsData.length === 0) {
+        setNotifications([]);
+        setUnreadCount(0);
+        return;
+      }
+
+      // Get unique user IDs and post IDs
+      const userIds = [...new Set(notificationsData.map(n => n.from_user_id))];
+      const postIds = [...new Set(notificationsData.map(n => n.post_id).filter(id => id))];
+
+      // Fetch profiles
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_url')
+        .in('id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Fetch posts if there are any
+      let postsData = [];
+      if (postIds.length > 0) {
+        const { data, error: postsError } = await supabase
+          .from('posts')
+          .select('id, content')
+          .in('id', postIds);
+
+        if (postsError) throw postsError;
+        postsData = data || [];
+      }
+
+      // Create lookup maps
+      const profilesMap = new Map();
+      profilesData?.forEach(profile => {
+        profilesMap.set(profile.id, profile);
+      });
+
+      const postsMap = new Map();
+      postsData.forEach(post => {
+        postsMap.set(post.id, post);
+      });
+
+      // Format notifications
+      const formattedNotifications = notificationsData
+        .filter(notification => profilesMap.has(notification.from_user_id))
+        .map(notification => ({
+          ...notification,
+          from_user: {
+            username: profilesMap.get(notification.from_user_id).username,
+            display_name: profilesMap.get(notification.from_user_id).display_name,
+            avatar_url: profilesMap.get(notification.from_user_id).avatar_url
+          },
+          post: notification.post_id ? postsMap.get(notification.post_id) : undefined
+        }));
+
+      setNotifications(formattedNotifications);
+      setUnreadCount(formattedNotifications.filter(n => !n.read).length);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
