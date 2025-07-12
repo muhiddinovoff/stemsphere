@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -46,7 +45,7 @@ export const usePosts = () => {
           hashtags,
           image_url,
           user_id,
-          profiles!posts_user_id_fkey (
+          profiles (
             username,
             display_name,
             field,
@@ -65,11 +64,23 @@ export const usePosts = () => {
         throw error;
       }
 
-      // Filter out posts without valid profiles
-      const validPosts = data?.filter(post => post.profiles && typeof post.profiles === 'object' && post.profiles.username) || [];
+      // Filter out posts without valid profiles and ensure type safety
+      const validPosts = data?.filter(post => 
+        post.profiles && 
+        typeof post.profiles === 'object' && 
+        'username' in post.profiles &&
+        post.profiles.username
+      ) || [];
       
       const formattedPosts = validPosts.map(post => ({
         ...post,
+        profiles: post.profiles as {
+          username: string;
+          display_name: string;
+          field: string;
+          verified: boolean;
+          avatar_url?: string;
+        },
         _count: {
           likes: post.likes?.length || 0,
           comments: post.comments?.length || 0
@@ -77,7 +88,7 @@ export const usePosts = () => {
       }));
 
       console.log('Formatted posts:', formattedPosts);
-      setPosts(formattedPosts as Post[]);
+      setPosts(formattedPosts);
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast({
