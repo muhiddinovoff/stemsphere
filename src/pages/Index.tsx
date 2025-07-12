@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import CreatePost from '@/components/CreatePost';
@@ -10,6 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import PostModal from '@/components/PostModal';
+import UserProfileModal from '@/components/UserProfileModal';
+import MessagingModal from '@/components/MessagingModal';
 
 const Index = () => {
   const { posts, loading } = usePosts();
@@ -17,6 +19,10 @@ const Index = () => {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [showMessaging, setShowMessaging] = useState(false);
+  const [messagingUserId, setMessagingUserId] = useState<string | null>(null);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -33,6 +39,20 @@ const Index = () => {
     setSearchQuery('');
     setShowSearch(false);
     clearResults();
+  };
+
+  const handlePostClick = (post: any) => {
+    setSelectedPost(post);
+  };
+
+  const handleUserClick = (userId: string) => {
+    setSelectedUserId(userId);
+  };
+
+  const handleMessage = (userId: string) => {
+    setMessagingUserId(userId);
+    setSelectedUserId(null);
+    setShowMessaging(true);
   };
 
   return (
@@ -84,11 +104,22 @@ const Index = () => {
                   {results.map((user) => (
                     <Card key={user.id} className="hover:bg-accent/5 transition-colors">
                       <CardContent className="p-3">
-                        <div className="flex items-center space-x-3">
+                        <div 
+                          className="flex items-center space-x-3 cursor-pointer"
+                          onClick={() => handleUserClick(user.id)}
+                        >
                           <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-blue-400 flex items-center justify-center">
-                            <span className="text-white font-semibold text-sm">
-                              {user.display_name.charAt(0)}
-                            </span>
+                            {user.avatar_url ? (
+                              <img 
+                                src={user.avatar_url} 
+                                alt={user.display_name}
+                                className="w-full h-full rounded-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-white font-semibold text-sm">
+                                {user.display_name.charAt(0)}
+                              </span>
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-1">
@@ -132,7 +163,11 @@ const Index = () => {
             ) : (
               <div className="space-y-0">
                 {posts.map((post) => (
-                  <PostCard key={post.id} post={post} />
+                  <PostCard 
+                    key={post.id} 
+                    post={post} 
+                    onClick={() => handlePostClick(post)}
+                  />
                 ))}
                 {posts.length === 0 && (
                   <div className="text-center py-8">
@@ -153,6 +188,29 @@ const Index = () => {
           </>
         )}
       </div>
+
+      {/* Modals */}
+      <PostModal 
+        post={selectedPost}
+        isOpen={!!selectedPost}
+        onClose={() => setSelectedPost(null)}
+      />
+      
+      <UserProfileModal
+        userId={selectedUserId}
+        isOpen={!!selectedUserId}
+        onClose={() => setSelectedUserId(null)}
+        onMessage={handleMessage}
+      />
+      
+      <MessagingModal
+        isOpen={showMessaging}
+        onClose={() => {
+          setShowMessaging(false);
+          setMessagingUserId(null);
+        }}
+        selectedUserId={messagingUserId || undefined}
+      />
     </Layout>
   );
 };

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -228,6 +227,17 @@ export const usePosts = () => {
             post_id: postId,
             user_id: user.id
           });
+
+        // Create notification for the post owner
+        const post = posts.find(p => p.id === postId);
+        if (post && post.user_id !== user.id) {
+          await supabase.rpc('create_notification', {
+            p_user_id: post.user_id,
+            p_type: 'like',
+            p_from_user_id: user.id,
+            p_post_id: postId
+          });
+        }
       }
 
       await fetchPosts();
@@ -249,6 +259,17 @@ export const usePosts = () => {
         });
 
       if (error) throw error;
+
+      // Create notification for the post owner
+      const post = posts.find(p => p.id === postId);
+      if (post && post.user_id !== user.id) {
+        await supabase.rpc('create_notification', {
+          p_user_id: post.user_id,
+          p_type: 'comment',
+          p_from_user_id: user.id,
+          p_post_id: postId
+        });
+      }
 
       await fetchPosts();
       toast({

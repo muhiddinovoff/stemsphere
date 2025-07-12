@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +12,7 @@ import Settings from "./components/Settings";
 import ProfilePage from "./components/ProfilePage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import MessagingModal from "./components/MessagingModal";
 
 const queryClient = new QueryClient();
 
@@ -43,7 +43,7 @@ const App = () => (
               } />
               <Route path="/messages" element={
                 <ProtectedRoute>
-                  <div>Messages Page (Coming Soon)</div>
+                  <MessagingModal isOpen={true} onClose={() => window.history.back()} />
                 </ProtectedRoute>
               } />
               <Route path="/profile" element={
