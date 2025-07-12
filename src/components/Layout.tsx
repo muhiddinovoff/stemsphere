@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTranslation } from '@/hooks/useTranslation';
 import LanguageSelector from './LanguageSelector';
 import { Button } from '@/components/ui/button';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings, MessageCircle, Search, User, Grid3X3, Home } from 'lucide-react';
 import NotificationDropdown from './NotificationDropdown';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
@@ -26,6 +26,55 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             <img src="/logo.png" alt="Logo" className="h-8 w-auto" />
             <h1 className="text-2xl font-bold">STEMSphere</h1>
           </div>
+          
+          {/* Navigation Menu */}
+          <nav className="hidden md:flex items-center space-x-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="flex items-center space-x-1"
+            >
+              <Home className="h-4 w-4" />
+              <span>Home</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/explore')}
+              className="flex items-center space-x-1"
+            >
+              <Search className="h-4 w-4" />
+              <span>Explore</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/categories')}
+              className="flex items-center space-x-1"
+            >
+              <Grid3X3 className="h-4 w-4" />
+              <span>Categories</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/messages')}
+              className="flex items-center space-x-1"
+            >
+              <MessageCircle className="h-4 w-4" />
+              <span>Messages</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/profile')}
+              className="flex items-center space-x-1"
+            >
+              <User className="h-4 w-4" />
+              <span>Profile</span>
+            </Button>
+          </nav>
           
           <div className="flex items-center space-x-2">
             <NotificationDropdown />
