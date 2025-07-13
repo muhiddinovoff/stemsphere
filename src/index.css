@@ -147,39 +147,6 @@
     left: 100%;
   }
 
-  /* MacBook-style Glass Dock for Icons */
-  .glass-dock {
-    background: var(--glass-bg);
-    backdrop-filter: var(--backdrop-blur);
-    -webkit-backdrop-filter: var(--backdrop-blur);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
-    @apply rounded-full flex justify-center items-center gap-4 px-4 py-2;
-    transition: all 0.3s ease;
-  }
-
-  .glass-dock .icon {
-    @apply p-2 rounded-full;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    transition: transform 0.3s ease;
-  }
-
-  .glass-dock .icon:hover {
-    transform: scale(1.2);
-  }
-
-  @media (max-width: 640px) {
-    .glass-dock {
-      @apply flex-col gap-2 px-2 py-4;
-    }
-
-    .glass-dock .icon {
-      @apply p-1;
-    }
-  }
-
   /* Smooth Animations */
   .fade-in {
     animation: fadeIn 0.5s ease-out;
