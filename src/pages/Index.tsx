@@ -13,48 +13,6 @@ import PostModal from '@/components/PostModal';
 import UserProfileModal from '@/components/UserProfileModal';
 import MessagingModal from '@/components/MessagingModal';
 
-// Dock Component
-const Dock = () => {
-  const { t } = useTranslation();
-
-  return (
-    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-3/4 max-w-md">
-      <div className="glass-dock flex justify-around">
-        <a href="/" className="icon p-2">
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2L4 7v10l8 5 8-5V7l-8-5zm0 18l-6-3.75V8.25L12 5l6 3.25v6.5L12 20z"/>
-          </svg>
-          <span className="sr-only">{t('home')}</span>
-        </a>
-        <a href="/explore" className="icon p-2">
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm1-13h-2v2h2v2h-2v2h2v2h-2v2h6v-8h-4z"/>
-          </svg>
-          <span className="sr-only">{t('explore')}</span>
-        </a>
-        <a href="/categories" className="icon p-2">
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 16H7v-2h10v2zm0-4H7v-2h10v2zm0-4H7V7h10v2z"/>
-          </svg>
-          <span className="sr-only">{t('categories')}</span>
-        </a>
-        <a href="/messages" className="icon p-2">
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
-          </svg>
-          <span className="sr-only">{t('messages')}</span>
-        </a>
-        <a href="/profile" className="icon p-2">
-          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-1.13-4.97-2.71.23-1.23 1.86-2.29 3.97-2.29s3.74 1.06 3.97 2.29c-.54 1.58-2.94 2.71-4.97 2.71z"/>
-          </svg>
-          <span className="sr-only">{t('profile')}</span>
-        </a>
-      </div>
-    </div>
-  );
-};
-
 const Index = () => {
   const { posts, loading } = usePosts();
   const { results, loading: searchLoading, searchUsers, clearResults } = useSearch();
@@ -99,7 +57,7 @@ const Index = () => {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto pb-20 md:pb-24">
+      <div className="max-w-2xl mx-auto pb-20 md:pb-4">
         {/* Welcome Header */}
         <div className="glass-card p-6 mb-6 text-center fade-in">
           <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mb-2">
@@ -253,9 +211,6 @@ const Index = () => {
         }}
         selectedUserId={messagingUserId || undefined}
       />
-
-      {/* Dock */}
-      <Dock />
     </Layout>
   );
 };
