@@ -173,7 +173,7 @@ export const usePosts = () => {
     }
   }, [user]);
 
-  const createPost = async (content: string, category: string, hashtags: string[]) => {
+  const createPost = async (content: string, category: string, hashtags: string[], imageUrl?: string | null) => {
     if (!user) return;
 
     try {
@@ -183,7 +183,8 @@ export const usePosts = () => {
           content,
           category,
           hashtags,
-          user_id: user.id
+          user_id: user.id,
+          ...(imageUrl && { image_url: imageUrl })
         });
 
       if (error) throw error;
