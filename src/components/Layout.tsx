@@ -45,14 +45,14 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="min-h-screen bg-background w-full">
       {/* Desktop & Tablet Header */}
-      <header className="hidden md:block glass-card mx-4 mt-4 mb-0 rounded-xl border-0">
+      <header className="hidden md:block glass-card mx-4 mt-4 mb-0 rounded-xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center space-x-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleSidebar}
-              className="glass-button lg:hidden"
+              className="glass-button lg:hidden hover:bg-white/10 text-white border border-white/20"
             >
               {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
@@ -75,7 +75,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               variant="ghost"
               size="sm"
               onClick={() => navigate('/settings')}
-              className="glass-button flex items-center space-x-2"
+              className="glass-button flex items-center space-x-2 hover:bg-white/10 text-white border border-white/20"
             >
               <Settings className="h-4 w-4" />
               <span className="hidden lg:inline">{t('settings')}</span>
@@ -84,7 +84,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               variant="ghost"
               size="sm"
               onClick={handleSignOut}
-              className="glass-button flex items-center space-x-2"
+              className="glass-button flex items-center space-x-2 hover:bg-white/10 text-white border border-white/20"
             >
               <LogOut className="h-4 w-4" />
               <span className="hidden lg:inline">{t('signOut')}</span>
@@ -94,7 +94,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       </header>
 
       {/* Mobile Header */}
-      <header className="block md:hidden glass-card mx-4 mt-4 mb-4 rounded-xl border-0">
+      <header className="block md:hidden glass-card mx-4 mt-4 mb-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center space-x-3">
             <img 
@@ -113,7 +113,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               variant="ghost"
               size="sm"
               onClick={handleSignOut}
-              className="glass-button"
+              className="glass-button hover:bg-white/10 text-white border border-white/20"
             >
               <LogOut className="h-4 w-4" />
             </Button>
@@ -123,7 +123,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
       <div className="flex min-h-screen w-full">
         {/* Desktop Sidebar */}
-        <aside className={`hidden lg:flex flex-col glass-nav mx-4 mb-4 rounded-xl transition-all duration-300 ${
+        <aside className={`hidden lg:flex flex-col glass-nav mx-4 mb-4 rounded-xl transition-all duration-300 border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl ${
           sidebarOpen ? 'w-64' : 'w-16'
         }`}>
           <div className="p-4">
@@ -131,7 +131,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               variant="ghost"
               size="sm"
               onClick={toggleSidebar}
-              className="glass-button w-full justify-center"
+              className="glass-button w-full justify-center hover:bg-white/10 text-white border border-white/20"
             >
               {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
@@ -147,7 +147,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                     <Button
                       variant="ghost"
                       onClick={() => navigate(item.path)}
-                      className={`glass-nav-item w-full ${active ? 'active' : ''} ${
+                      className={`glass-nav-item w-full hover:bg-white/10 text-white border border-white/20 ${
+                        active ? 'bg-white/20 border-white/30' : ''
+                      } ${
                         sidebarOpen ? 'justify-start px-4 py-3' : 'justify-center px-2 py-3'
                       }`}
                     >
@@ -163,14 +165,14 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
         {/* Tablet Sidebar Overlay */}
         {sidebarOpen && (
-          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden" onClick={toggleSidebar}>
-            <aside className="fixed left-0 top-0 h-full w-64 glass-nav sidebar-enter z-50">
-              <div className="p-4 border-b border-glass-border">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden" onClick={toggleSidebar}>
+            <aside className="fixed left-0 top-0 h-full w-64 glass-nav sidebar-enter z-50 border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl">
+              <div className="p-4 border-b border-white/20">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={toggleSidebar}
-                  className="glass-button w-full justify-end"
+                  className="glass-button w-full justify-end hover:bg-white/10 text-white border border-white/20"
                 >
                   <X className="h-5 w-5" />
                 </Button>
@@ -189,7 +191,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                             navigate(item.path);
                             setSidebarOpen(false);
                           }}
-                          className={`glass-nav-item w-full justify-start px-4 py-3 ${active ? 'active' : ''}`}
+                          className={`glass-nav-item w-full justify-start px-4 py-3 hover:bg-white/10 text-white border border-white/20 ${
+                            active ? 'bg-white/20 border-white/30' : ''
+                          }`}
                         >
                           <Icon className="h-5 w-5 mr-3" />
                           <span className="text-sm font-medium">{item.label}</span>
@@ -204,13 +208,13 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         )}
 
         {/* Tablet Icon-only Sidebar */}
-        <aside className="hidden md:flex lg:hidden flex-col glass-nav mx-4 mb-4 rounded-xl w-16">
+        <aside className="hidden md:flex lg:hidden flex-col glass-nav mx-4 mb-4 rounded-xl w-16 border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl">
           <div className="p-4">
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleSidebar}
-              className="glass-button w-full justify-center"
+              className="glass-button w-full justify-center hover:bg-white/10 text-white border border-white/20"
             >
               <Menu className="h-5 w-5" />
             </Button>
@@ -226,7 +230,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                     <Button
                       variant="ghost"
                       onClick={() => navigate(item.path)}
-                      className={`glass-nav-item w-full justify-center px-2 py-3 ${active ? 'active' : ''}`}
+                      className={`glass-nav-item w-full justify-center px-2 py-3 hover:bg-white/10 text-white border border-white/20 ${
+                        active ? 'bg-white/20 border-white/30' : ''
+                      }`}
                     >
                       <Icon className="h-5 w-5" />
                     </Button>
@@ -244,7 +250,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       </div>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 glass-nav border-t md:hidden z-50 mobile-nav-enter">
+      <nav className="fixed bottom-0 left-0 right-0 glass-nav border-t md:hidden z-50 mobile-nav-enter border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl">
         <div className="flex justify-around items-center py-3 px-2">
           {navigationItems.map((item) => {
             const Icon = item.icon;
@@ -255,7 +261,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate(item.path)}
-                className={`glass-nav-item flex flex-col items-center space-y-1 p-2 min-w-0 flex-1 ${active ? 'active' : ''}`}
+                className={`glass-nav-item flex flex-col items-center space-y-1 p-2 min-w-0 flex-1 hover:bg-white/10 text-white ${
+                  active ? 'bg-white/20' : ''
+                }`}
               >
                 <Icon className="h-5 w-5" />
                 <span className="text-xs truncate">{item.label}</span>
@@ -273,7 +281,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           setSelectedUserId(null);
         }}
         onMessage={(userId) => {
-          // Handle message functionality
           console.log('Message user:', userId);
         }}
       />
