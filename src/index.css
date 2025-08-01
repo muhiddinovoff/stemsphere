@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -37,11 +38,13 @@
 
     --radius: 0.75rem;
 
-    /* Glassmorphism Variables */
-    --glass-bg: rgba(255, 255, 255, 0.25);
-    --glass-border: rgba(255, 255, 255, 0.18);
+    /* Enhanced Glassmorphism Variables */
+    --glass-bg: rgba(255, 255, 255, 0.15);
+    --glass-bg-secondary: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.2);
     --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    --backdrop-blur: blur(12px);
+    --backdrop-blur: blur(16px);
+    --glass-hover: rgba(255, 255, 255, 0.25);
   }
 
   .dark {
@@ -75,9 +78,11 @@
     --ring: 210 100% 60%;
 
     /* Dark Glassmorphism Variables */
-    --glass-bg: rgba(18, 30, 45, 0.25);
-    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-bg: rgba(18, 30, 45, 0.15);
+    --glass-bg-secondary: rgba(18, 30, 45, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.1);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --glass-hover: rgba(18, 30, 45, 0.25);
   }
 }
 
@@ -98,31 +103,45 @@
 }
 
 @layer components {
-  /* Glassmorphism Card Component */
+  /* Enhanced Glassmorphism Card Component */
   .glass-card {
     background: var(--glass-bg);
     backdrop-filter: var(--backdrop-blur);
     -webkit-backdrop-filter: var(--backdrop-blur);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
-    @apply rounded-xl;
+    @apply rounded-xl transition-all duration-300;
   }
 
-  /* Liquid Glass Button Effect for all buttons */
-  button, .glow-button {
+  .glass-card:hover {
+    background: var(--glass-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+  }
+
+  .glass-card-secondary {
+    background: var(--glass-bg-secondary);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    @apply rounded-lg transition-all duration-300;
+  }
+
+  /* Enhanced Liquid Glass Button Effect */
+  .glass-button, button:not(.no-glass) {
     @apply relative overflow-hidden;
     background: var(--glass-bg);
     backdrop-filter: var(--backdrop-blur);
     -webkit-backdrop-filter: var(--backdrop-blur);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
-    @apply rounded-lg text-foreground;
-    transition: all 0.3s ease;
+    @apply rounded-lg text-foreground transition-all duration-300;
     position: relative;
     overflow: hidden;
   }
 
-  button::before, .glow-button::before {
+  .glass-button::before, button:not(.no-glass)::before {
     content: '';
     position: absolute;
     top: 0;
@@ -138,13 +157,28 @@
     transition: 0.5s;
   }
 
-  button:hover, .glow-button:hover {
+  .glass-button:hover, button:not(.no-glass):hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px 0 hsla(var(--primary), 0.4);
+    background: var(--glass-hover);
   }
 
-  button:hover::before, .glow-button:hover::before {
+  .glass-button:hover::before, button:not(.no-glass):hover::before {
     left: 100%;
+  }
+
+  /* Glass Input Fields */
+  input, textarea, select {
+    background: var(--glass-bg) !important;
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border: 1px solid var(--glass-border) !important;
+    box-shadow: var(--glass-shadow);
+  }
+
+  input:focus, textarea:focus, select:focus {
+    background: var(--glass-hover) !important;
+    box-shadow: 0 0 0 2px hsla(var(--primary), 0.5);
   }
 
   /* Smooth Animations */
@@ -188,11 +222,41 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground));
+    background: var(--glass-bg);
     border-radius: 3px;
+    backdrop-filter: var(--backdrop-blur);
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary));
+    background: var(--glass-hover);
+  }
+
+  /* Glass Navigation */
+  .glass-nav {
+    background: var(--glass-bg);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border-right: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-nav-item {
+    background: transparent;
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border: 1px solid transparent;
+    @apply rounded-lg transition-all duration-300;
+  }
+
+  .glass-nav-item:hover {
+    background: var(--glass-hover);
+    border-color: var(--glass-border);
+    transform: translateX(4px);
+  }
+
+  .glass-nav-item.active {
+    background: var(--glass-hover);
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-shadow);
   }
 }

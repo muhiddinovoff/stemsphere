@@ -203,6 +203,39 @@ export const usePosts = () => {
     }
   };
 
+  const deletePost = async (postId: string) => {
+    if (!user) return;
+
+    try {
+      // First check if the user owns the post
+      const post = posts.find(p => p.id === postId);
+      if (!post || post.user_id !== user.id) {
+        throw new Error('You can only delete your own posts');
+      }
+
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      await fetchPosts();
+      toast({
+        title: "Success",
+        description: "Post deleted successfully!"
+      });
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete post",
+        variant: "destructive"
+      });
+    }
+  };
+
   const toggleLike = async (postId: string) => {
     if (!user) return;
 
@@ -290,6 +323,7 @@ export const usePosts = () => {
     posts,
     loading,
     createPost,
+    deletePost,
     toggleLike,
     addComment,
     refreshPosts: fetchPosts
