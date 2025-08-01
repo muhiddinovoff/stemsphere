@@ -1,75 +1,75 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import Layout from '@/components/Layout';
 import CreatePost from '@/components/CreatePost';
 import PostCard from '@/components/PostCard';
-import PostModal from '@/components/PostModal';
 import { usePosts } from '@/hooks/usePosts';
 
-const Index = () => {
-  const { posts, loading, deletePost } = usePosts();
-  const [selectedPost, setSelectedPost] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+interface IndexProps {
+  onUserClick?: (userId: string) => void;
+}
 
-  const handlePostClick = (post: any) => {
-    setSelectedPost(post);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedPost(null);
-    setIsModalOpen(false);
-  };
-
-  const handleDeletePost = async (postId: string) => {
-    await deletePost(postId);
-  };
+const Index = ({ onUserClick }: IndexProps) => {
+  const { posts, loading } = usePosts();
 
   if (loading) {
     return (
-      <Layout>
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading posts...</p>
-          </div>
+      <div className="max-w-2xl mx-auto">
+        <div className="text-center py-20 animate-bounce-in">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground text-lg">Loading your feed...</p>
         </div>
-      </Layout>
+      </div>
     );
   }
 
   return (
-    <Layout>
-      <div className="max-w-2xl mx-auto p-4 space-y-6">
-        <div className="fade-in">
-          <CreatePost />
+    <div className="max-w-2xl mx-auto space-y-6">
+      {/* Welcome Header */}
+      <div className="glass-card p-6 animate-fade-in-up">
+        <div className="flex items-center space-x-4">
+          <div className="w-12 h-12 rounded-xl mirror-glass-strong flex items-center justify-center">
+            <div className="w-6 h-6 rounded bg-gradient-to-br from-primary to-blue-500"></div>
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
+              Welcome to STEMSphere
+            </h1>
+            <p className="text-muted-foreground">Connect with brilliant minds in science, technology, engineering, and mathematics</p>
+          </div>
         </div>
-        
-        <div className="space-y-4">
-          {posts.length === 0 ? (
-            <div className="glass-card p-8 text-center fade-in">
-              <p className="text-muted-foreground">No posts yet. Be the first to share something!</p>
-            </div>
-          ) : (
-            posts.map((post, index) => (
-              <div key={post.id} className="slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
-                <PostCard 
-                  post={post} 
-                  onClick={() => handlePostClick(post)}
-                  onDelete={handleDeletePost}
-                />
-              </div>
-            ))
-          )}
-        </div>
-
-        <PostModal
-          post={selectedPost}
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-        />
       </div>
-    </Layout>
+
+      {/* Create Post */}
+      <div className="animate-slide-in-right" style={{ animationDelay: '0.2s' }}>
+        <CreatePost />
+      </div>
+
+      {/* Posts Feed */}
+      <div className="space-y-0">
+        {posts.length === 0 ? (
+          <div className="glass-card p-12 text-center animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+            <div className="w-16 h-16 rounded-full mirror-glass-strong flex items-center justify-center mx-auto mb-4">
+              <div className="w-8 h-8 rounded bg-gradient-to-br from-primary to-blue-500"></div>
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Your feed is empty</h3>
+            <p className="text-muted-foreground mb-4">
+              Start following other users or create your first post to get started!
+            </p>
+          </div>
+        ) : (
+          posts.map((post, index) => (
+            <div 
+              key={post.id}
+              className="animate-fade-in-up"
+              style={{ animationDelay: `${(index + 3) * 0.1}s` }}
+            >
+              <PostCard post={post} onUserClick={onUserClick} />
+            </div>
+          ))
+        )}
+      </div>
+    </div>
   );
 };
 
